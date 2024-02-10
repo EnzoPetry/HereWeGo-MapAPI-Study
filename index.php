@@ -7,6 +7,7 @@
     <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
     <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
     <script type="text/javascript" charset="utf-8" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js" ></script>
+    <script type="text/javascript" src="apikey.js"></script>
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
 </head>
 <body>
@@ -36,7 +37,7 @@
 <script>
 function loadMap(lat, lng) {
     var platform = new H.service.Platform({
-        'apikey': ''
+        'apikey': API_KEY
     });
 
     var defaultLayers = platform.createDefaultLayers();
