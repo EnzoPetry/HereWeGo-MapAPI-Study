@@ -8,6 +8,10 @@
     <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
     <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
     <script type="text/javascript" charset="utf-8" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
@@ -58,9 +62,7 @@
             var platform = new H.service.Platform({
                 'apikey': API_KEY
             });
-
             var defaultLayers = platform.createDefaultLayers();
-
             var map = new H.Map(
                 document.getElementById('mapContainer'),
                 defaultLayers.vector.normal.map,
@@ -77,39 +79,37 @@
             var marker = new H.map.Marker({ lat: lat, lng: lng });
             map.addObject(marker);
         }
-    <?php 
-        if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['logradouro']) && isset($_GET['numero']) && isset($_GET['pais']) && isset($_GET['estado']) && isset($_GET['cidade'])) {
-            $logradouro = $_GET["logradouro"];
-            $numero = $_GET["numero"];
-            $pais = $_GET["pais"];
-            $estado = $_GET["estado"];
-            $cidade = $_GET["cidade"];
-
-            $address_query = urlencode($logradouro. "+".$numero. "+".$pais. "+".$estado. "+".$cidade);
-            $url = "https://geocode.search.hereapi.com/v1/geocode?q=".$address_query. "&apiKey=_c7yqpPQS6wTXt9slP7pd5pg00WA5Dm1iPCOnqOm3N8";
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            $resp = curl_exec($ch);
-
-            if ($e = curl_error($ch)) {
-            echo $e;
-            } else {
-                $decoded = json_decode($resp);
-                // Verifique se a resposta foi bem-sucedida e se há uma localização disponível
-                if ($decoded && isset($decoded -> items) && count($decoded -> items) > 0) {
-                    // Obtenha a latitude e a longitude da primeira localização
-                    $lat = $decoded -> items[0] -> position -> lat;
-                    $lng = $decoded -> items[0] -> position -> lng;
-                echo "loadMap($lat, $lng);";
-                } else {
-                echo "console.log('Nenhuma localização encontrada.');";
-                }
-            }
-
-            curl_close($ch);
-        }
-    ?>
+        $(document).ready(function() {
+            $('.form-container').submit(function(event){
+                event.preventDefault();
+                var formData = {
+                    logradouro: $('#logradouro').val(),
+                    numero: $('#numero').val(),
+                    pais: $('#pais').val(),
+                    estado: $('#estado').val(),
+                    cidade: $('#cidade').val()
+                };
+                $.ajax({
+                    type: 'GET',
+                    url: 'buscaLogradouro.php',
+                    data: formData,
+                    beforeSend: function(xhr){
+                        xhr.setRequestHeader('apikey', APIKEY);
+                    },
+                    success: function(response) {
+                        var data = JSON.parse(response);
+                        if (data && data.lat && data.lng){
+                            loadMap(data.lat, data.lgn);
+                        }else{
+                            console.log('Nenhuma localização encontrada.');
+                        }
+                    },
+                    error: function(xhr, status, error){
+                        console.log('Erro ao enviar a solicitação Ajax:', error);
+                    }
+                });
+            });
+        });
     </script>
 
 </body>
