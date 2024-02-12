@@ -1,7 +1,7 @@
 <?php
     if (isset($_SERVER['HTTP_APIKEY'])) {
         $apiKey = $_SERVER['HTTP_APIKEY'];
-
+    
     if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['logradouro']) && isset($_GET['numero']) && isset($_GET['pais']) && isset($_GET['estado']) && isset($_GET['cidade'])) {
         $logradouro = $_GET["logradouro"];
         $numero = $_GET["numero"];

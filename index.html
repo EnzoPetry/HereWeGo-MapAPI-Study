@@ -4,18 +4,6 @@
 <head>
     <title>Formulário de Envio</title>
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
-    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
-    <script type="text/javascript" charset="utf-8" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
-    <script
-    src="https://code.jquery.com/jquery-3.7.1.min.js"
-    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-    crossorigin="anonymous"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="apikey.js"></script>
     <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
     <link rel="stylesheet" type="text/css" href="stylesheet.css" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -57,28 +45,44 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
+    <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
+    <script type="text/javascript" charset="utf-8" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
+    <script src="apikey.js"></script>
+
     <script>
+        var map;
+        var defaultLayers;
+        var platform;
+
         function loadMap(lat, lng) {
-            var platform = new H.service.Platform({
-                'apikey': API_KEY
-            });
-            var defaultLayers = platform.createDefaultLayers();
-            var map = new H.Map(
-                document.getElementById('mapContainer'),
-                defaultLayers.vector.normal.map,
-                {
-                    zoom: 15,
-                    center: {
-                        lat: lat,
-                        lng: lng
-                    }
+            if (!map) {
+                platform = new H.service.Platform({
+                    'apikey': API_KEY
                 });
-            const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
-            window.addEventListener('resize', () => map.getViewPort().resize());
-            var ui = H.ui.UI.createDefault(map, defaultLayers,);
+                defaultLayers = platform.createDefaultLayers();
+                map = new H.Map(
+                    document.getElementById('mapContainer'),
+                    defaultLayers.vector.normal.map,
+                    {
+                        zoom: 15,
+                        center: {
+                            lat: lat,
+                            lng: lng
+                        }
+                    });
+                const behavior = new H.mapevents.Behavior(new H.mapevents.MapEvents(map));
+                window.addEventListener('resize', () => map.getViewPort().resize());
+            } else {
+                map.setCenter({ lat: lat, lng: lng });
+            }
+
             var marker = new H.map.Marker({ lat: lat, lng: lng });
             map.addObject(marker);
         }
+        loadMap(0,0);
         $(document).ready(function() {
             $('.form-container').submit(function(event){
                 event.preventDefault();
@@ -89,25 +93,27 @@
                     estado: $('#estado').val(),
                     cidade: $('#cidade').val()
                 };
+                console.log(formData);
                 $.ajax({
-                    type: 'GET',
-                    url: 'buscaLogradouro.php',
-                    data: formData,
-                    beforeSend: function(xhr){
-                        xhr.setRequestHeader('apikey', APIKEY);
-                    },
-                    success: function(response) {
-                        var data = JSON.parse(response);
-                        if (data && data.lat && data.lng){
-                            loadMap(data.lat, data.lgn);
-                        }else{
-                            console.log('Nenhuma localização encontrada.');
-                        }
-                    },
-                    error: function(xhr, status, error){
-                        console.log('Erro ao enviar a solicitação Ajax:', error);
+                type: 'GET',
+                url: 'buscaLogradouro.php', // Altere 'seu_script.php' para o caminho do seu script PHP
+                data: formData,
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('apikey', API_KEY);
+                },
+                success: function(response) {
+                    // Manipule a resposta do servidor
+                    var data = JSON.parse(response);
+                    if (data && data.lat && data.lng) {
+                        loadMap(data.lat, data.lng);
+                    } else {
+                        console.log('Nenhuma localização encontrada.');
                     }
-                });
+                },
+                error: function(xhr, status, error) {
+                    console.log('Erro ao enviar a solicitação Ajax:', error);
+            
+                }});
             });
         });
     </script>
